@@ -39,7 +39,7 @@ def insertar():
                        (marca, modelo, serial, estado, ram, procesador, almacenamiento, sistema_operativo, tiene_mouse, tiene_teclado, placa_sena, fecha_registro))
         conn.commit()
         conn.close()
-        return redirect('/')
+        return redirect('/home')
         
     return render_template('insertar.html')
 
@@ -75,6 +75,63 @@ def home():
     computadores = cursor.fetchall()
     conn.close()
     return render_template("home.html", usuarios=datos, computadores=computadores, usuario=usuario)
+
+
+@app.route("/editar/<int:id>", methods=['GET', 'POST'])
+def editar(id):
+    conn = conexion()
+    cursor = conn.cursor()
+
+    
+    cursor.execute("SELECT * FROM inventario WHERE id = ?", (id,))
+    computador = cursor.fetchone()
+
+    
+    if request.method == 'POST':
+
+        marca = request.form['marca']
+        modelo = request.form['modelo']
+        serial = request.form['serial']
+        estado = request.form['estado']
+        ram = request.form['ram']
+        procesador = request.form['procesador']
+        almacenamiento = request.form['almacenamiento']
+        sistema_operativo = request.form['sistema_operativo']
+        tiene_mouse = request.form['tiene_mouse']
+        tiene_teclado = request.form['tiene_teclado']
+        placa_sena = request.form['placa_sena']
+        fecha_registro = request.form['fecha_registro']
+
+        cursor.execute("""
+            UPDATE inventario 
+            SET marca=?, modelo=?, serial=?, estado=?, ram=?, procesador=?, 
+                almacenamiento=?, sistema_operativo=?, tiene_mouse=?, tiene_teclado=?, 
+                placa_sena=?, fecha_registro=?
+            WHERE id=?
+        """, (marca, modelo, serial, estado, ram, procesador, almacenamiento, sistema_operativo,
+              tiene_mouse, tiene_teclado, placa_sena, fecha_registro, id))
+
+        conn.commit()
+        conn.close()
+
+        
+        return redirect('/home')
+
+    conn.close()
+
+    
+    return render_template("editar.html", computador=computador)
+
+
+
+@app.route('/eliminar/<int:id>', methods=['POST', 'GET'])
+def eliminar(id):
+    conn = conexion()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM inventario WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+    return redirect('/home')
         
         
 if __name__ == '__main__':
